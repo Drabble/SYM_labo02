@@ -3,6 +3,8 @@ package com.heig.sym.sym_labo02.activities;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.heig.sym.sym_labo02.R;
@@ -16,20 +18,25 @@ public class Activity1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_1);
 
+        final TextView message = (TextView)findViewById(R.id.message);
+
         CommunicationManager comM = new CommunicationManager();
         comM.setCommunicationEventListener(new CommunicationEventListener() {
             @Override
             public boolean handleServerResponse(String response) {
-                Toast.makeText(Activity1.this, "Message received from echo server : " + response, Toast.LENGTH_SHORT).show();
                 Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
-                /*if(response.compareTo("ok") == 0){
-                    return true;
-                }*/
+                if(response.startsWith("ok")){
+                    Toast.makeText(Activity1.this, "Message received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    message.setText(response);
+                }
+                else{
+                    Toast.makeText(Activity1.this, "Error in the data received from the echo server ! ", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             }
         });
         try {
-            comM.sendRequest("ok", "http://sym.dutoit.email/rest/txt");
+            comM.sendRequest("ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain");
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }

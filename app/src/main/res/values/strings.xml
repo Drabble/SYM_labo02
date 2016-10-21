@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SYM_Labo02</string>
+    <string name="xml_sent">XML envoyé :</string>
+    <string name="fetching_data">Fetching data...</string>
+    <string name="xml_received">XML reçu :</string>
+    <string name="json_received">JSON reçu :</string>
+    <string name="json_sent">JSON envoyé :</string>
+    <string name="message_received">Message reçu :</string>
 </resources>

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -21,17 +22,19 @@ import java.net.URL;
 public class CommunicationManager  {
     private CommunicationEventListener communicationEventListener;
 
-    private Exception mException;
-
     private final static String TAG = CommunicationManager.class.getSimpleName();
 
     private class PostRequest extends AsyncTask<Void, Void, String>{
         private String url;
         private String request;
+        private String xRequest;
+        private String contentType;
 
-        public PostRequest(String url, String request){
+        public PostRequest(String url, String request, String xRequest, String contentType){
             this.url = url;
             this.request = request;
+            this.xRequest = xRequest;
+            this.contentType = contentType;
         }
 
         /**
@@ -42,8 +45,21 @@ public class CommunicationManager  {
          */
         @Override
         protected String doInBackground(Void... params) {
-            mException = null;
-            return communication();
+            String ret = null;
+            while(true){
+                try {
+                    ret = communication();
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+            return ret;
         }
 
         /**
@@ -53,14 +69,7 @@ public class CommunicationManager  {
          */
         @Override
         protected void onPostExecute(String ret) {
-            if (mException == null) {
-                while(!communicationEventListener.handleServerResponse(ret)){
-                    new PostRequest(url, request).execute();
-                }
-            } else {
-                new PostRequest(url, request).execute();
-                //communicationEventListener.failure(mException);
-            }
+            communicationEventListener.handleServerResponse(ret);
         }
 
         /**
@@ -68,69 +77,53 @@ public class CommunicationManager  {
          *
          * @return the request
          */
-        protected String communication(){
+        protected String communication() throws Exception {
             String body = null;
-            try {
-                URL url = new URL(this.url);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoOutput(true);
-                connection.setDoInput(true);
-                connection.setInstanceFollowRedirects(false);
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("charset", "utf-8");
-                connection.setRequestProperty("Content-Type", "text/plain");
-                //connection.setRequestProperty("Content-Type", "application/json");
-                connection.setRequestProperty("X-Network", "CSD");
-                connection.setConnectTimeout(2000);
-                connection.setUseCaches(false);
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-                bw.write(request);
-                bw.flush();
-                bw.close();
+            URL url = new URL(this.url);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setInstanceFollowRedirects(false);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("charset", "utf-8");
+            connection.setRequestProperty("Content-Type", contentType);
+            connection.setRequestProperty("X-Network", xRequest);
+            connection.setConnectTimeout(2000);
+            connection.setUseCaches(false);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+            bw.write(request);
+            bw.flush();
+            bw.close();
 
-                int status = connection.getResponseCode();
-                InputStream is;
-                Log.i(TAG, "HTTP status : " + String.valueOf(status));
-                if (status == HttpURLConnection.HTTP_OK || status == HttpURLConnection.HTTP_NO_CONTENT || status == HttpURLConnection.HTTP_CREATED) {
-                    is = connection.getInputStream();
-                } else {
-                    is = connection.getErrorStream();
-                }
-                BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
-                String line;
-                body = "";
-                while ((line = br.readLine()) != null) {
-                    body += line + "\n";
-                }
-                br.close();
-                if (status != HttpURLConnection.HTTP_OK && status != HttpURLConnection.HTTP_NO_CONTENT && status != HttpURLConnection.HTTP_CREATED) {
-                    setException(new Exception(body));
-                }
-            } catch (IOException e) {
-                setException(e);
+            int status = connection.getResponseCode();
+            InputStream is;
+            Log.i(TAG, "HTTP status : " + String.valueOf(status));
+            if (status == HttpURLConnection.HTTP_OK) {
+                is = connection.getInputStream();
+            } else {
+                is = connection.getErrorStream();
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+            String line;
+            body = "";
+            while ((line = br.readLine()) != null) {
+                body += line + "\n";
+            }
+            br.close();
+            if (status != HttpURLConnection.HTTP_OK) {
+                throw new RuntimeException("Invalid HTTP response");
             }
             return body;
         }
     }
 
-
-
-
-    public void sendRequest(String request, String url) throws Exception{
+    public void sendRequest(String request, String url, String xNetwork, String contentType) throws Exception{
         Log.i(TAG, "New request POST on " + url);
-        new PostRequest(url, request).execute();
+
+        new PostRequest(url, request, xNetwork, contentType).execute();
     }
 
     public void setCommunicationEventListener (CommunicationEventListener communicationEventListener){
         this.communicationEventListener = communicationEventListener;
-    }
-
-    /**
-     * When an exception has occured
-     *
-     * @param exception the Exception
-     */
-    protected void setException(Exception exception) {
-        mException = exception;
     }
 }

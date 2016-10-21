@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startActivity2(View v){
-        Intent i = new Intent(this, Activity2.class);
+        Intent i = new Intent(this, Activity1.class);
         startActivity(i);
     }
 

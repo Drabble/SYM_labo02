@@ -9,5 +9,33 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.heig.sym.sym_labo02.activities.Activity1">
+    <TextView
+        android:text="@string/message_received"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/LabelMessage"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scroll_view_message"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/LabelMessage">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:text="@string/fetching_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/message" />
+        </LinearLayout>
+    </ScrollView>
+
 
 </RelativeLayout>

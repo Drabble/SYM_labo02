@@ -9,5 +9,116 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.heig.sym.sym_labo02.activities.Activity3">
+    <TextView
+        android:text="@string/json_sent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/label_json_sent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:id="@+id/scroll_view_json_sent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/label_json_sent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:text="@string/fetching_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/json_sent" />
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:text="@string/json_received"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scroll_view_json_sent"
+        android:layout_alignParentStart="true"
+        android:id="@+id/label_json_received"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/scroll_view_json_received"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/label_json_received">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:text="@string/fetching_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/json_received" />
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:text="@string/xml_sent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scroll_view_json_received"
+        android:layout_alignParentStart="true"
+        android:id="@+id/label_xml_sent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:id="@+id/scroll_view_xml_sent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/label_xml_sent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:text="@string/fetching_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/xml_sent" />
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:text="@string/xml_received"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scroll_view_xml_sent"
+        android:layout_alignParentStart="true"
+        android:id="@+id/label_xml_received"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/scroll_view_xml_received"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/label_xml_received">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:text="@string/fetching_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/xml_received" />
+        </LinearLayout>
+    </ScrollView>
 
 </RelativeLayout>
