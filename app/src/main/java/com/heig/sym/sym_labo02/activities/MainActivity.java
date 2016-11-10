@@ -1,3 +1,8 @@
+/**
+ * Project: Labo 02 SYM
+ * Authors: Antoine Drabble & Patrick Djomo
+ * Date: 28.11.2016
+ */
 package com.heig.sym.sym_labo02.activities;
 
 import android.content.Intent;

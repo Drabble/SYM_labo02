@@ -1,18 +1,19 @@
+/**
+ * Project: Labo 02 SYM
+ * Authors: Antoine Drabble & Patrick Djomo
+ * Date: 28.11.2016
+ */
 package com.heig.sym.sym_labo02.communications;
 
 import android.os.AsyncTask;
 import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 
 /**
@@ -20,21 +21,37 @@ import java.net.URL;
  * application to communicate with the server and the corresponding callback.
  */
 public class CommunicationManager  {
+    // Event listener which will be called upon success of the HTTP request
     private CommunicationEventListener communicationEventListener;
 
+    // Class TAG for logging
     private final static String TAG = CommunicationManager.class.getSimpleName();
 
+    /**
+     * Async task to run the HTTP POST requests asynchronously
+     */
     private class PostRequest extends AsyncTask<Void, Void, String>{
         private String url;
         private String request;
         private String xRequest;
         private String contentType;
+        private boolean xContentEncoding;
 
-        public PostRequest(String url, String request, String xRequest, String contentType){
+        /**
+         * Create a new post request with the specified arguments
+         *
+         * @param url
+         * @param request
+         * @param xRequest
+         * @param contentType
+         * @param xContentEncoding
+         */
+        public PostRequest(String url, String request, String xRequest, String contentType, boolean xContentEncoding){
             this.url = url;
             this.request = request;
             this.xRequest = xRequest;
             this.contentType = contentType;
+            this.xContentEncoding = xContentEncoding;
         }
 
         /**
@@ -46,6 +63,8 @@ public class CommunicationManager  {
         @Override
         protected String doInBackground(Void... params) {
             String ret = null;
+
+            // Run the HTTP request and wait 10000 to remake the request if it didn't work
             while(true){
                 try {
                     ret = communication();
@@ -76,8 +95,9 @@ public class CommunicationManager  {
          * Signature of the actual execution method wich will be implemented by each type of reqeust
          *
          * @return the request
+         * @throws IOException
          */
-        protected String communication() throws Exception {
+        protected String communication() throws IOException {
             String body = null;
             URL url = new URL(this.url);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -117,12 +137,25 @@ public class CommunicationManager  {
         }
     }
 
-    public void sendRequest(String request, String url, String xNetwork, String contentType) throws Exception{
+    /**
+     * Send a new POST request with the given arguments
+     *
+     * @param request
+     * @param url
+     * @param xNetwork
+     * @param contentType
+     * @param xContentEncoding
+     */
+    public void sendRequest(String request, String url, String xNetwork, String contentType, boolean xContentEncoding){
         Log.i(TAG, "New request POST on " + url);
 
-        new PostRequest(url, request, xNetwork, contentType).execute();
+        new PostRequest(url, request, xNetwork, contentType, xContentEncoding).execute();
     }
 
+    /**
+     * Set the communication event listener which will be called upon success of the HTTP POST request
+     * @param communicationEventListener
+     */
     public void setCommunicationEventListener (CommunicationEventListener communicationEventListener){
         this.communicationEventListener = communicationEventListener;
     }
