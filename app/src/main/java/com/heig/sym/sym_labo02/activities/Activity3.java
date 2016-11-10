@@ -6,9 +6,19 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.heig.sym.sym_labo02.R;
 import com.heig.sym.sym_labo02.communications.CommunicationEventListener;
 import com.heig.sym.sym_labo02.communications.CommunicationManager;
+import com.heig.sym.sym_labo02.model.User;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 public class Activity3 extends AppCompatActivity {
 
@@ -27,20 +37,22 @@ public class Activity3 extends AppCompatActivity {
         communicationManagerJSON.setCommunicationEventListener(new CommunicationEventListener() {
             @Override
             public boolean handleServerResponse(String response) {
-                Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
-                if(response.startsWith("{\"text\":\"ok\"")){
-                    Toast.makeText(Activity3.this, "JSON Message received from echo server ! ", Toast.LENGTH_SHORT).show();
-                    jsonReceived.setText(response);
-                }
-                else{
-                    Toast.makeText(Activity3.this, "Error in the JSON data received from the echo server ! ", Toast.LENGTH_SHORT).show();
-                }
+                JsonParser parser = new JsonParser();
+                JsonObject jsonResponse = parser.parse(response).getAsJsonObject();
+                Gson gson = new Gson();
+                User user = gson.fromJson(jsonResponse, User.class);
+                Log.i(Activity1.class.getName(), "User received from echo server : " + user);
+                Toast.makeText(Activity3.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
+                jsonReceived.setText(user.toString());
                 return true;
             }
         });
         try {
-            communicationManagerJSON.sendRequest("{\"text\" : \"ok\"}", "http://sym.dutoit.email/rest/json", "CSD", "application/json");
-            jsonSent.setText("{\"text\" : \"ok\"}");
+            Gson g = new Gson();
+            User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
+            String jsonRequest = g.toJson(user);
+            communicationManagerJSON.sendRequest(jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json");
+            jsonSent.setText(user.toString());
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -62,6 +74,15 @@ public class Activity3 extends AppCompatActivity {
             }
         });
         try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder;
+            docBuilder = docFactory.newDocumentBuilder();
+
+            // root elements
+            Document doc = docBuilder.newDocument();
+            Element rootElement = doc.createElement("User");
+            User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
+            //doc.appendChild(user);
             communicationManagerXML.sendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n" +
                     "<directory />\n", "http://sym.dutoit.email/rest/xml", "CSD", "application/xml");
