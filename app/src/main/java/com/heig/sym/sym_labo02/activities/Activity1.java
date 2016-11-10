@@ -41,7 +41,7 @@ public class Activity1 extends AppCompatActivity {
             }
         });
         try {
-            comM.sendRequest("ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain");
+            comM.sendRequest("ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain", false);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }

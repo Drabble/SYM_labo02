@@ -9,12 +9,15 @@ import android.os.AsyncTask;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Abstract generic class to implement the bases of every type of HTTP requests used by the messaging
@@ -110,10 +113,18 @@ public class CommunicationManager  {
             connection.setRequestProperty("X-Network", xRequest);
             connection.setConnectTimeout(2000);
             connection.setUseCaches(false);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-            bw.write(request);
-            bw.flush();
-            bw.close();
+            if(xContentEncoding){
+                connection.setRequestProperty("X-Content-Encoding", "deflate");
+                DeflaterOutputStream dos = new DeflaterOutputStream(connection.getOutputStream());
+                dos.write(request.getBytes());
+                dos.flush();
+                dos.close();
+            }else{
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+                bw.write(request);
+                bw.flush();
+                bw.close();
+            }
 
             int status = connection.getResponseCode();
             InputStream is;
@@ -123,14 +134,27 @@ public class CommunicationManager  {
             } else {
                 is = connection.getErrorStream();
             }
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
-            String line;
-            body = "";
-            while ((line = br.readLine()) != null) {
-                body += line + "\n";
-            }
-            br.close();
+
+            /*System.out.println("ENCODING : " + connection.getHeaderField("X-Content-Encoding"));
+            if(connection.getHeaderField("X-Content-Encoding") != null && connection.getHeaderField("X-Content-Encoding").equalsIgnoreCase("deflate")){
+                DeflaterInputStream dis = new DeflaterInputStream(is);
+                dis.read();
+                body = "";
+                while ((dis.read(line)) != null) {
+                    body += line + "\n";
+                }
+                dis.close();
+            } else {*/
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+                String line;
+                body = "";
+                while ((line = br.readLine()) != null) {
+                    body += line + "\n";
+                }
+                br.close();
+            //}
             if (status != HttpURLConnection.HTTP_OK) {
+                System.out.println("Body answer : " + body);
                 throw new RuntimeException("Invalid HTTP response");
             }
             return body;
@@ -154,6 +178,7 @@ public class CommunicationManager  {
 
     /**
      * Set the communication event listener which will be called upon success of the HTTP POST request
+     *
      * @param communicationEventListener
      */
     public void setCommunicationEventListener (CommunicationEventListener communicationEventListener){
