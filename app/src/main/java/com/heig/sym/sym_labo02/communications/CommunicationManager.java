@@ -9,15 +9,16 @@ import android.os.AsyncTask;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.zip.DeflaterInputStream;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Abstract generic class to implement the bases of every type of HTTP requests used by the messaging
@@ -113,18 +114,17 @@ public class CommunicationManager  {
             connection.setRequestProperty("X-Network", xRequest);
             connection.setConnectTimeout(2000);
             connection.setUseCaches(false);
+
+            BufferedWriter bw;
             if(xContentEncoding){
                 connection.setRequestProperty("X-Content-Encoding", "deflate");
-                DeflaterOutputStream dos = new DeflaterOutputStream(connection.getOutputStream());
-                dos.write(request.getBytes());
-                dos.flush();
-                dos.close();
+                bw = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(connection.getOutputStream(), new Deflater(9, true)), "UTF-8"));
             }else{
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-                bw.write(request);
-                bw.flush();
-                bw.close();
+                bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
             }
+            bw.write(request);
+            bw.flush();
+            bw.close();
 
             int status = connection.getResponseCode();
             InputStream is;
@@ -135,26 +135,20 @@ public class CommunicationManager  {
                 is = connection.getErrorStream();
             }
 
-            /*System.out.println("ENCODING : " + connection.getHeaderField("X-Content-Encoding"));
+            BufferedReader br;
             if(connection.getHeaderField("X-Content-Encoding") != null && connection.getHeaderField("X-Content-Encoding").equalsIgnoreCase("deflate")){
-                DeflaterInputStream dis = new DeflaterInputStream(is);
-                dis.read();
-                body = "";
-                while ((dis.read(line)) != null) {
-                    body += line + "\n";
-                }
-                dis.close();
-            } else {*/
-                BufferedReader br = new BufferedReader(new InputStreamReader(is, "utf-8"));
-                String line;
-                body = "";
-                while ((line = br.readLine()) != null) {
-                    body += line + "\n";
-                }
-                br.close();
-            //}
+                br = new BufferedReader(new InputStreamReader(new InflaterInputStream(is, new Inflater(true)), "utf-8"));
+            } else{
+                br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+            }
+            String line;
+            body = "";
+            while ((line = br.readLine()) != null) {
+                body += line + "\n";
+            }
+            br.close();
+
             if (status != HttpURLConnection.HTTP_OK) {
-                System.out.println("Body answer : " + body);
                 throw new RuntimeException("Invalid HTTP response");
             }
             return body;

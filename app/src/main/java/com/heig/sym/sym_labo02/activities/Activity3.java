@@ -19,11 +19,12 @@ import com.heig.sym.sym_labo02.communications.CommunicationEventListener;
 import com.heig.sym.sym_labo02.communications.CommunicationManager;
 import com.heig.sym.sym_labo02.model.User;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import org.jdom2.Attribute;
+import org.jdom2.DocType;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 public class Activity3 extends AppCompatActivity {
 
@@ -67,33 +68,35 @@ public class Activity3 extends AppCompatActivity {
             @Override
             public boolean handleServerResponse(String response) {
                 Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
-                if(response.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                        "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n")){
-                    Toast.makeText(Activity3.this, "XML Message received from echo server ! ", Toast.LENGTH_SHORT).show();
-                    xmlReceived.setText(response);
-                }
-                else{
-                    Toast.makeText(Activity3.this, "Error in the data XML received from the echo server ! ", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(Activity3.this, "XML Message received from echo server !", Toast.LENGTH_SHORT).show();
+                xmlReceived.setText(response);
                 return true;
             }
         });
         try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder;
-            docBuilder = docFactory.newDocumentBuilder();
-
-            // root elements
-            Document doc = docBuilder.newDocument();
-            Element rootElement = doc.createElement("User");
             User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
-            //doc.appendChild(user);
+
+            Document doc = new Document();
+            Element root = new Element("user");
+            doc.setRootElement(root);
+            doc.setDocType(new DocType("Directory", "SYSTEM", "http://sym.dutoit.email/directory.dtd"));
+            root.setAttribute(new Attribute("id", String.valueOf(user.getId())));
+            root.addContent(new Element("username").setText(user.getUsername()));
+            root.addContent(new Element("email").setText(user.getEmail()));
+            root.addContent(new Element("password").setText(user.getPassword()));
+
+            XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
+            outputter.output(doc, System.out);
+
             communicationManagerXML.sendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n" +
                     "<directory />\n", "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
             xmlSent.setText("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n" +
                     "<directory />\n");
+
+            communicationManagerXML.sendRequest(outputter.outputString(doc), "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
+            xmlSent.setText(doc.toString());
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
