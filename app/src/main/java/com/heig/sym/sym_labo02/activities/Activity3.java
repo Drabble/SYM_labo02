@@ -74,29 +74,17 @@ public class Activity3 extends AppCompatActivity {
             }
         });
         try {
-            User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
-
             Document doc = new Document();
-            Element root = new Element("user");
+            Element root = new Element("directory");
             doc.setRootElement(root);
-            doc.setDocType(new DocType("Directory", "SYSTEM", "http://sym.dutoit.email/directory.dtd"));
-            root.setAttribute(new Attribute("id", String.valueOf(user.getId())));
-            root.addContent(new Element("username").setText(user.getUsername()));
-            root.addContent(new Element("email").setText(user.getEmail()));
-            root.addContent(new Element("password").setText(user.getPassword()));
+            doc.setDocType(new DocType("directory", "http://sym.dutoit.email/directory.dtd"));
 
             XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
-            outputter.output(doc, System.out);
+            String xml = outputter.outputString(doc);
+            System.out.println("OUTPUT  : " + xml);
 
-            communicationManagerXML.sendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n" +
-                    "<directory />\n", "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
-            xmlSent.setText("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!DOCTYPE directory SYSTEM \"http://sym.dutoit.email/directory.dtd\">\n" +
-                    "<directory />\n");
-
-            communicationManagerXML.sendRequest(outputter.outputString(doc), "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
-            xmlSent.setText(doc.toString());
+            xmlSent.setText(xml);
+            communicationManagerXML.sendRequest(xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
