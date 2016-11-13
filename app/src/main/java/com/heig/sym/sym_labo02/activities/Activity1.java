@@ -25,23 +25,21 @@ public class Activity1 extends AppCompatActivity {
 
         final TextView message = (TextView)findViewById(R.id.message);
 
-        CommunicationManager comM = new CommunicationManager();
-        comM.setCommunicationEventListener(new CommunicationEventListener() {
-            @Override
-            public boolean handleServerResponse(String response) {
-                Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
-                if(response.startsWith("ok")){
-                    Toast.makeText(Activity1.this, "Message received from echo server ! ", Toast.LENGTH_SHORT).show();
-                    message.setText(response);
-                }
-                else{
-                    Toast.makeText(Activity1.this, "Error in the data received from the echo server ! ", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
         try {
-            comM.sendRequest("ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain", false);
+            CommunicationManager.getInstance().sendRequest(this, "ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain", false, 200, new CommunicationEventListener() {
+                @Override
+                public boolean handleServerResponse(String response) {
+                    Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
+                    if(response.startsWith("ok")){
+                        Toast.makeText(Activity1.this, "Message received from echo server ! ", Toast.LENGTH_SHORT).show();
+                        message.setText(response);
+                    }
+                    else{
+                        Toast.makeText(Activity1.this, "Error in the data received from the echo server ! ", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+            });
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }

@@ -5,6 +5,7 @@
  */
 package com.heig.sym.sym_labo02.communications;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 import java.io.BufferedReader;
@@ -13,8 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketException;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
@@ -25,134 +34,22 @@ import java.util.zip.InflaterInputStream;
  * application to communicate with the server and the corresponding callback.
  */
 public class CommunicationManager  {
-    // Event listener which will be called upon success of the HTTP request
-    private CommunicationEventListener communicationEventListener;
-
     // Class TAG for logging
     private final static String TAG = CommunicationManager.class.getSimpleName();
 
-    /**
-     * Async task to run the HTTP POST requests asynchronously
-     */
-    private class PostRequest extends AsyncTask<Void, Void, String>{
-        private String url;
-        private String request;
-        private String xRequest;
-        private String contentType;
-        private boolean xContentEncoding;
+    private static CommunicationManager instance = null;
 
-        /**
-         * Create a new post request with the specified arguments
-         *
-         * @param url
-         * @param request
-         * @param xRequest
-         * @param contentType
-         * @param xContentEncoding
-         */
-        public PostRequest(String url, String request, String xRequest, String contentType, boolean xContentEncoding){
-            this.url = url;
-            this.request = request;
-            this.xRequest = xRequest;
-            this.contentType = contentType;
-            this.xContentEncoding = xContentEncoding;
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
+
+    protected CommunicationManager() {
+        // Exists only to defeat instantiation.
+    }
+
+    public static CommunicationManager getInstance() {
+        if(instance == null) {
+            instance = new CommunicationManager();
         }
-
-        /**
-         * To execute in the background thread
-         *
-         * @param params required ellipse
-         * @return the result
-         */
-        @Override
-        protected String doInBackground(Void... params) {
-            String ret = null;
-
-            // Run the HTTP request and wait 10000 to remake the request if it didn't work
-            while(true){
-                try {
-                    ret = communication();
-                    break;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-            return ret;
-        }
-
-        /**
-         * After executing the request
-         *
-         * @param ret the request
-         */
-        @Override
-        protected void onPostExecute(String ret) {
-            communicationEventListener.handleServerResponse(ret);
-        }
-
-        /**
-         * Signature of the actual execution method wich will be implemented by each type of reqeust
-         *
-         * @return the request
-         * @throws IOException
-         */
-        protected String communication() throws IOException {
-            String body = null;
-            URL url = new URL(this.url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setInstanceFollowRedirects(false);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.setRequestProperty("Content-Type", contentType);
-            connection.setRequestProperty("X-Network", xRequest);
-            connection.setConnectTimeout(2000);
-            connection.setUseCaches(false);
-
-            BufferedWriter bw;
-            if(xContentEncoding){
-                connection.setRequestProperty("X-Content-Encoding", "deflate");
-                bw = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(connection.getOutputStream(), new Deflater(9, true)), "UTF-8"));
-            }else{
-                bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
-            }
-            bw.write(request);
-            bw.flush();
-            bw.close();
-
-            int status = connection.getResponseCode();
-            InputStream is;
-            Log.i(TAG, "HTTP status : " + String.valueOf(status));
-            if (status == HttpURLConnection.HTTP_OK) {
-                is = connection.getInputStream();
-            } else {
-                is = connection.getErrorStream();
-            }
-
-            BufferedReader br;
-            if(connection.getHeaderField("X-Content-Encoding") != null && connection.getHeaderField("X-Content-Encoding").equalsIgnoreCase("deflate")){
-                br = new BufferedReader(new InputStreamReader(new InflaterInputStream(is, new Inflater(true)), "utf-8"));
-            } else{
-                br = new BufferedReader(new InputStreamReader(is, "utf-8"));
-            }
-            String line;
-            body = "";
-            while ((line = br.readLine()) != null) {
-                body += line + "\n";
-            }
-            br.close();
-
-            if (status != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("Invalid HTTP response");
-            }
-            return body;
-        }
+        return instance;
     }
 
     /**
@@ -164,18 +61,108 @@ public class CommunicationManager  {
      * @param contentType
      * @param xContentEncoding
      */
-    public void sendRequest(String request, String url, String xNetwork, String contentType, boolean xContentEncoding){
+    public void sendRequest(Activity activity, String request, String url, String xNetwork, String contentType, boolean xContentEncoding, int expectedHttpStatus, CommunicationEventListener communicationEventListener){
         Log.i(TAG, "New request POST on " + url);
 
-        new PostRequest(url, request, xNetwork, contentType, xContentEncoding).execute();
+        executor.schedule(new PostRequest(activity, url, request, xNetwork, contentType, xContentEncoding, expectedHttpStatus, communicationEventListener), 0, TimeUnit.SECONDS);
     }
 
     /**
-     * Set the communication event listener which will be called upon success of the HTTP POST request
-     *
-     * @param communicationEventListener
+     * Async task to run the HTTP POST requests asynchronously
      */
-    public void setCommunicationEventListener (CommunicationEventListener communicationEventListener){
-        this.communicationEventListener = communicationEventListener;
+    private class PostRequest implements Runnable {
+        private Activity activity;
+        private String url;
+        private String request;
+        private String xRequest;
+        private String contentType;
+        private boolean xContentEncoding;
+        private int expectedHttpStatus;
+        private CommunicationEventListener communicationEventListener;
+
+        /**
+         * Create a new post request with the specified arguments
+         *
+         * @param url
+         * @param request
+         * @param xRequest
+         * @param contentType
+         * @param xContentEncoding
+         */
+        public PostRequest(Activity activity, String url, String request, String xRequest, String contentType, boolean xContentEncoding, int expectedHttpStatus, CommunicationEventListener communicationEventListener){
+            this.activity = activity;
+            this.url = url;
+            this.request = request;
+            this.xRequest = xRequest;
+            this.contentType = contentType;
+            this.xContentEncoding = xContentEncoding;
+            this.expectedHttpStatus = expectedHttpStatus;
+            this.communicationEventListener = communicationEventListener;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Log.i(TAG, "Starting new request !");
+                String body = null;
+                URL url = new URL(this.url);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("charset", "utf-8");
+                connection.setRequestProperty("Content-Type", contentType);
+                connection.setRequestProperty("X-Network", xRequest);
+                connection.setConnectTimeout(2000);
+
+                BufferedWriter bw;
+                if (xContentEncoding) {
+                    connection.setRequestProperty("X-Content-Encoding", "deflate");
+                    bw = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(connection.getOutputStream(), new Deflater(9, true)), "UTF-8"));
+                } else {
+                    bw = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+                }
+                bw.write(request);
+                bw.flush();
+                bw.close();
+
+                int status = connection.getResponseCode();
+                InputStream is = connection.getInputStream();
+                Log.i(TAG, "HTTP status : " + String.valueOf(status));
+
+                BufferedReader br;
+                if (connection.getHeaderField("X-Content-Encoding") != null && connection.getHeaderField("X-Content-Encoding").equalsIgnoreCase("deflate")) {
+                    br = new BufferedReader(new InputStreamReader(new InflaterInputStream(is, new Inflater(true)), "utf-8"));
+                } else {
+                    br = new BufferedReader(new InputStreamReader(is, "utf-8"));
+                }
+                String line;
+                body = "";
+                while ((line = br.readLine()) != null) {
+                    body += line + "\n";
+                }
+                br.close();
+
+                if (status != expectedHttpStatus) {
+                    throw new InvalidKeyException("Invalid HTTP status response");
+                }
+
+                final String finalBody = body;
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        communicationEventListener.handleServerResponse(finalBody);
+                    }
+                });
+            } catch (java.net.SocketTimeoutException e) {
+                // Reschedule the task
+                Log.i(TAG, "Reschedulding request after timeout!");
+                executor.schedule(this, 10, TimeUnit.SECONDS);
+            } catch(InvalidKeyException e){
+                // Invalid HTTP status response
+                e.printStackTrace();
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 }

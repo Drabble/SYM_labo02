@@ -32,25 +32,23 @@ public class Activity4 extends AppCompatActivity {
         final TextView xmlSent = (TextView)findViewById(R.id.xml_sent);
         final TextView xmlReceived = (TextView)findViewById(R.id.xml_received);
 
-        CommunicationManager communicationManagerJSON = new CommunicationManager();
-        communicationManagerJSON.setCommunicationEventListener(new CommunicationEventListener() {
-            @Override
-            public boolean handleServerResponse(String response) {
-                JsonParser parser = new JsonParser();
-                JsonObject jsonResponse = parser.parse(response).getAsJsonObject();
-                Gson gson = new Gson();
-                User user = gson.fromJson(jsonResponse, User.class);
-                Log.i(Activity1.class.getName(), "User received from echo server : " + user);
-                Toast.makeText(Activity4.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
-                jsonReceived.setText(user.toString());
-                return true;
-            }
-        });
         try {
             Gson g = new Gson();
             User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
             String jsonRequest = g.toJson(user);
-            communicationManagerJSON.sendRequest(jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", true);
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", true, 200, new CommunicationEventListener() {
+                @Override
+                public boolean handleServerResponse(String response) {
+                    JsonParser parser = new JsonParser();
+                    JsonObject jsonResponse = parser.parse(response).getAsJsonObject();
+                    Gson gson = new Gson();
+                    User user = gson.fromJson(jsonResponse, User.class);
+                    Log.i(Activity1.class.getName(), "User received from echo server : " + user);
+                    Toast.makeText(Activity4.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    jsonReceived.setText(user.toString());
+                    return true;
+                }
+            });
             jsonSent.setText(user.toString());
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();

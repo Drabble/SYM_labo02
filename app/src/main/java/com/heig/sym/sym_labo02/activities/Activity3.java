@@ -39,40 +39,28 @@ public class Activity3 extends AppCompatActivity {
         final TextView xmlSent = (TextView)findViewById(R.id.xml_sent);
         final TextView xmlReceived = (TextView)findViewById(R.id.xml_received);
 
-        CommunicationManager communicationManagerJSON = new CommunicationManager();
-        communicationManagerJSON.setCommunicationEventListener(new CommunicationEventListener() {
-            @Override
-            public boolean handleServerResponse(String response) {
-                JsonParser parser = new JsonParser();
-                JsonObject jsonResponse = parser.parse(response).getAsJsonObject();
-                Gson gson = new Gson();
-                User user = gson.fromJson(jsonResponse, User.class);
-                Log.i(Activity1.class.getName(), "User received from echo server : " + user);
-                Toast.makeText(Activity3.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
-                jsonReceived.setText(user.toString());
-                return true;
-            }
-        });
         try {
             Gson g = new Gson();
             User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
             String jsonRequest = g.toJson(user);
-            communicationManagerJSON.sendRequest(jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", false);
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", false, 200, new CommunicationEventListener() {
+                @Override
+                public boolean handleServerResponse(String response) {
+                    JsonParser parser = new JsonParser();
+                    JsonObject jsonResponse = parser.parse(response).getAsJsonObject();
+                    Gson gson = new Gson();
+                    User user = gson.fromJson(jsonResponse, User.class);
+                    Log.i(Activity1.class.getName(), "User received from echo server : " + user);
+                    Toast.makeText(Activity3.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    jsonReceived.setText(user.toString());
+                    return true;
+                }
+            });
             jsonSent.setText(user.toString());
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        CommunicationManager communicationManagerXML = new CommunicationManager();
-        communicationManagerXML.setCommunicationEventListener(new CommunicationEventListener() {
-            @Override
-            public boolean handleServerResponse(String response) {
-                Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
-                Toast.makeText(Activity3.this, "XML Message received from echo server !", Toast.LENGTH_SHORT).show();
-                xmlReceived.setText(response);
-                return true;
-            }
-        });
         try {
             Document doc = new Document();
             Element root = new Element("directory");
@@ -84,7 +72,15 @@ public class Activity3 extends AppCompatActivity {
             System.out.println("OUTPUT  : " + xml);
 
             xmlSent.setText(xml);
-            communicationManagerXML.sendRequest(xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false);
+            CommunicationManager.getInstance().sendRequest(this, xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false, 200, new CommunicationEventListener() {
+                @Override
+                public boolean handleServerResponse(String response) {
+                    Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
+                    Toast.makeText(Activity3.this, "XML Message received from echo server !", Toast.LENGTH_SHORT).show();
+                    xmlReceived.setText(response);
+                    return true;
+                }
+            });
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
