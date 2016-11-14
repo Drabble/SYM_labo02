@@ -34,4 +34,6 @@ import java.util.EventListener;
 
 public interface CommunicationEventListener extends EventListener {
     public boolean handleServerResponse(String response);
+
+    public void handleServerError(String response);
 }

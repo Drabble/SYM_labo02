@@ -19,6 +19,8 @@ import com.heig.sym.sym_labo02.communications.CommunicationEventListener;
 import com.heig.sym.sym_labo02.communications.CommunicationManager;
 import com.heig.sym.sym_labo02.model.User;
 
+import java.net.HttpURLConnection;
+
 public class Activity4 extends AppCompatActivity {
 
     @Override
@@ -36,7 +38,7 @@ public class Activity4 extends AppCompatActivity {
             Gson g = new Gson();
             User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
             String jsonRequest = g.toJson(user);
-            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", true, 200, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", true, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
                 @Override
                 public boolean handleServerResponse(String response) {
                     JsonParser parser = new JsonParser();
@@ -47,6 +49,13 @@ public class Activity4 extends AppCompatActivity {
                     Toast.makeText(Activity4.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
                     jsonReceived.setText(user.toString());
                     return true;
+                }
+
+                @Override
+                public void handleServerError(String response) {
+                    Log.i(Activity1.class.getName(), "Error or wrong status code received from echo server : " + response);
+                    Toast.makeText(Activity4.this, "Error or wrong status code received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    jsonReceived.setText(response);
                 }
             });
             jsonSent.setText(user.toString());

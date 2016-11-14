@@ -136,32 +136,41 @@ public class CommunicationManager  {
                 } else {
                     br = new BufferedReader(new InputStreamReader(is, "utf-8"));
                 }
+                StringBuilder bodyBuilder = new StringBuilder();
                 String line;
                 body = "";
                 while ((line = br.readLine()) != null) {
-                    body += line + "\n";
+                    bodyBuilder.append(line);
+                    bodyBuilder.append("\n");
                 }
                 br.close();
 
+                final String response = bodyBuilder.toString();
                 if (status != expectedHttpStatus) {
-                    throw new InvalidKeyException("Invalid HTTP status response");
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            communicationEventListener.handleServerError(response);
+                        }
+                    });
                 }
-
-                final String finalBody = body;
-                activity.runOnUiThread(new Runnable() {
-                    public void run() {
-                        communicationEventListener.handleServerResponse(finalBody);
-                    }
-                });
+                else {
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            communicationEventListener.handleServerResponse(response);
+                        }
+                    });
+                }
             } catch (java.net.SocketTimeoutException e) {
                 // Reschedule the task
                 Log.i(TAG, "Reschedulding request after timeout!");
                 executor.schedule(this, 10, TimeUnit.SECONDS);
-            } catch(InvalidKeyException e){
-                // Invalid HTTP status response
+            } catch(final Exception e){
                 e.printStackTrace();
-            } catch(Exception e){
-                e.printStackTrace();
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        communicationEventListener.handleServerError("Error running the request");
+                    }
+                });
             }
         }
     }

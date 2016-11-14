@@ -26,6 +26,8 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import java.net.HttpURLConnection;
+
 public class Activity3 extends AppCompatActivity {
 
     @Override
@@ -43,7 +45,7 @@ public class Activity3 extends AppCompatActivity {
             Gson g = new Gson();
             User user = new User(1, "antoine", "1234", "antoine.drabble@heig-vd.ch");
             String jsonRequest = g.toJson(user);
-            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", false, 200, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
                 @Override
                 public boolean handleServerResponse(String response) {
                     JsonParser parser = new JsonParser();
@@ -54,6 +56,13 @@ public class Activity3 extends AppCompatActivity {
                     Toast.makeText(Activity3.this, "JSON User received from echo server ! ", Toast.LENGTH_SHORT).show();
                     jsonReceived.setText(user.toString());
                     return true;
+                }
+
+                @Override
+                public void handleServerError(String response) {
+                    Log.i(Activity1.class.getName(), "Error or wrong status code received from echo server : " + response);
+                    Toast.makeText(Activity3.this, "Error or wrong status code received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    jsonReceived.setText(response);
                 }
             });
             jsonSent.setText(user.toString());
@@ -72,13 +81,20 @@ public class Activity3 extends AppCompatActivity {
             System.out.println("OUTPUT  : " + xml);
 
             xmlSent.setText(xml);
-            CommunicationManager.getInstance().sendRequest(this, xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false, 200, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
                 @Override
                 public boolean handleServerResponse(String response) {
                     Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
                     Toast.makeText(Activity3.this, "XML Message received from echo server !", Toast.LENGTH_SHORT).show();
                     xmlReceived.setText(response);
                     return true;
+                }
+
+                @Override
+                public void handleServerError(String response) {
+                    Log.i(Activity1.class.getName(), "Error or wrong status code received from echo server : " + response);
+                    Toast.makeText(Activity3.this, "Error or wrong status code received from echo server ! ", Toast.LENGTH_SHORT).show();
+                    xmlReceived.setText(response);
                 }
             });
         } catch (Exception e) {
