@@ -20,6 +20,8 @@
         <activity android:name=".activities.Activity1" />
         <activity android:name=".activities.Activity3" />
         <activity android:name=".activities.Activity4"></activity>
+        <service android:name="communications.CommunicationManager"
+                 android:exported="false"/>
     </application>
 
 </manifest>

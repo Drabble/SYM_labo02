@@ -1,15 +1,27 @@
+/**
+ * Project: Labo 02 SYM
+ * Authors: Antoine Drabble & Patrick Djomo
+ * Date: 28.11.2016
+ */
 package com.heig.sym.sym_labo02.model;
 
 /**
- * Created by antoi on 26.10.2016.
+ * Defines a simple user with an id, a username, a password and an email
  */
-
 public class User{
     private int id;
     private String username;
     private String password;
     private String email;
 
+    /**
+     * Create a new user with the following parameters
+     *
+     * @param id
+     * @param username
+     * @param password
+     * @param email
+     */
     public User(int id, String username, String password, String email) {
         this.id = id;
         this.username = username;

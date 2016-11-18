@@ -6,4 +6,12 @@
     <string name="json_received">JSON reçu :</string>
     <string name="json_sent">JSON envoyé :</string>
     <string name="message_received">Message reçu :</string>
+    <string name="message_received_success">"Message received from echo server ! "</string>
+    <string name="message_received_data_fail">"Error in the data received from the echo server ! "</string>
+    <string name="message_received_status_fail">"Error or wrong status code received from echo server ! "</string>
+    <string name="json_user_received_success">"JSON User received from echo server ! "</string>
+    <string name="request_success">Request success</string>
+    <string name="request_succeeded">The request succeeded!</string>
+    <string name="request_fail">Request fail</string>
+    <string name="request_failed">The request failed</string>
 </resources>

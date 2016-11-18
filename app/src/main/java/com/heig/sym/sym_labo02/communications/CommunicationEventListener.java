@@ -32,8 +32,22 @@ package com.heig.sym.sym_labo02.communications;
 
 import java.util.EventListener;
 
+/**
+ * Interface used for handling server responses
+ */
 public interface CommunicationEventListener extends EventListener {
-    public boolean handleServerResponse(String response);
+    /**
+     * Handle the server response in case of a success
+     *
+     * @param response
+     * @return
+     */
+    boolean handleServerResponse(String response);
 
-    public void handleServerError(String response);
+    /**
+     * Handle the server response in case of an error
+     *
+     * @param response
+     */
+    void handleServerError(String response);
 }
