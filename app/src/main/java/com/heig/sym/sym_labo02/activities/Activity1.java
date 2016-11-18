@@ -2,20 +2,6 @@
  * Project: Labo 02 SYM
  * Authors: Antoine Drabble & Patrick Djomo
  * Date: 28.11.2016
- * Description:
- * Comme vu avec l'assistant, l'activité 1 et 2 sont les même êtant donné que l'envoi
- * différé a été simplement rajouté à la classe CommunicationManager qui était utilisée
- * dans l'activité 1. Le CommunicationManager utilisait une AsyncTask pour les communications
- * non différées dans la version du CommunicationManager à l'adresse suivante :
- * https://github.com/servietsky777/SYM_labo02/blob/b744166c28422bba3b697232db42163d2c1e189e/app/src/main/java/com/heig/sym/sym_labo02/communications/CommunicationManager.java
- * Comme vu avec le professeur l'envoi différé a été fait avec un Singleton (donc les
- * requêtes seront détruite quand l'application sera terminée. Il faudrait utiliser un
- * service pour pallier à ce problème mais ce n'est pas nécessaire pour ce laboratoire).
- * Le Singleton (CommunicationManager) utilise un ScheduledExecutorService afin de
- * créer la requête. Si la requête fait un timeout elle se réinscrira elle même dans
- * le ScheduledExecutorService pour être réexécutée quelques secondes plus tard.
- * L'interface CommunicationEventListener a été quelque peu modifiée afin de rajouter une méthode
- * pour gérer le cas d'une erreur de réponse du serveur.
  */
 package com.heig.sym.sym_labo02.activities;
 
@@ -34,6 +20,20 @@ import java.net.HttpURLConnection;
 /**
  * Makes a POST request on the echo server with text/plain and outputs the server response in
  * the corresponding field.
+ *
+ * Comme vu avec l'assistant, l'activité 1 et 2 sont les même êtant donné que l'envoi
+ * différé a été simplement rajouté à la classe CommunicationManager qui était utilisée
+ * dans l'activité 1. Le CommunicationManager utilisait une AsyncTask pour les communications
+ * non différée comme on peut le voir dans la version du CommunicationManager à l'adresse suivante :
+ * https://github.com/servietsky777/SYM_labo02/blob/b744166c28422bba3b697232db42163d2c1e189e/app/src/main/java/com/heig/sym/sym_labo02/communications/CommunicationManager.java
+ * Comme vu avec le professeur l'envoi différé a été fait avec un Singleton (donc les
+ * requêtes seront détruite quand l'application est terminée. Il faudrait utiliser un
+ * service pour pallier à ce problème mais ce n'est pas nécessaire pour ce laboratoire).
+ * Le Singleton (CommunicationManager) utilise un ScheduledExecutorService afin de
+ * créer la requête. Si la requête fait un timeout elle se réinscrira elle même dans
+ * le ScheduledExecutorService pour être réexécutée quelques secondes plus tard.
+ * L'interface CommunicationEventListener a été quelque peu modifiée afin de rajouter une méthode
+ * pour gérer le cas d'une erreur de réponse du serveur.
  */
 public class Activity1 extends AppCompatActivity {
 

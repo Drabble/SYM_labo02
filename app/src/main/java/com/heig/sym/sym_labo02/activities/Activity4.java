@@ -70,6 +70,11 @@ public class Activity4 extends AppCompatActivity {
                     return true;
                 }
 
+                /**
+                 * Handle the server error by showing an error toast and set the response to the text view
+                 *
+                 * @param response
+                 */
                 @Override
                 public void handleServerError(String response) {
                     // Show an error toast and update the response text view
