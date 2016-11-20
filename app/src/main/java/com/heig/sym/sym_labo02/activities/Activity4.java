@@ -47,7 +47,8 @@ public class Activity4 extends AppCompatActivity {
             String jsonRequest = g.toJson(user);
 
             // Send the deflated JSON request to the echo server
-            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", true, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json",
+                    "CSD", "application/json", true, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
 
                 /**
                  * Handle the server response by updating the text field and showing a success toast

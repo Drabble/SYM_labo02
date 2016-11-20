@@ -54,7 +54,10 @@ public class Activity1 extends AppCompatActivity {
 
         try {
             // Get the singleton instance of the communication manager and send the request
-            CommunicationManager.getInstance().sendRequest(this, "ok", "http://sym.dutoit.email/rest/txt", "CSD", "text/plain", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, "Lorem ipsum dolor sit amet, velit " +
+                    "ut, volutpat fringilla nonummy sollicitudin semper fusce velit, vel donec.",
+                    "http://sym.dutoit.email/rest/txt", "CSD", "text/plain", false,
+                    HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
 
                 /**
                  * Make a toast containing the request success message and update the text field
@@ -68,7 +71,7 @@ public class Activity1 extends AppCompatActivity {
                     Log.i(Activity1.class.getName(), "Message received from echo server : " + response);
 
                     // If the response starts with the same value as the request show the toast and update the field
-                    if(response.startsWith("ok")){
+                    if(response.startsWith("Lorem ipsum dolor")){
                         Toast.makeText(Activity1.this, R.string.message_received_success, Toast.LENGTH_SHORT).show();
                         message.setText(response);
                     }

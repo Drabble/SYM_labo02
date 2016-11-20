@@ -56,7 +56,8 @@ public class Activity3 extends AppCompatActivity {
             String jsonRequest = g.toJson(user);
 
             // Send the JSON request to the server
-            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json", "CSD", "application/json", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, jsonRequest, "http://sym.dutoit.email/rest/json",
+                    "CSD", "application/json", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
 
                 /**
                  * Handle the server response. Shows a success toast and update the response text view
@@ -115,7 +116,8 @@ public class Activity3 extends AppCompatActivity {
             xmlSent.setText(xml);
 
             // Send the XML request to the echo server
-            CommunicationManager.getInstance().sendRequest(this, xml, "http://sym.dutoit.email/rest/xml", "CSD", "application/xml", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
+            CommunicationManager.getInstance().sendRequest(this, xml, "http://sym.dutoit.email/rest/xml",
+                    "CSD", "application/xml", false, HttpURLConnection.HTTP_OK, new CommunicationEventListener() {
 
                 /**
                  * Handle the server response. Shows a success toast and update the response text view
